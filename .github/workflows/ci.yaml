@@ -63,7 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TAG: test
-      ORG: networkservicemesh
+      ORG: lllamnyp
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v1
@@ -91,14 +91,14 @@ jobs:
           fi
 
   restrictNSMDeps:
-    name: Restrict dependencies on github.com/networkservicemesh/*
+    name: Restrict dependencies on github.com/lllamnyp/*
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Restrict dependencies on github.com/networkservicemesh/*
+      - name: Restrict dependencies on github.com/lllamnyp/*
         run: |
-          for i in $(grep github.com/networkservicemesh/ go.mod |grep -v '^module' | sed 's;.*\(github.com\/networkservicemesh\/[a-zA-z\/]*\).*;\1;g' | sort -u);do
-            if [ "${i}" != "github.com/networkservicemesh/api" ]; then
+          for i in $(grep github.com/lllamnyp/ go.mod |grep -v '^module' | sed 's;.*\(github.com\/lllamnyp\/[a-zA-z\/]*\).*;\1;g' | sort -u);do
+            if [ "${i}" != "github.com/lllamnyp/api" ]; then
               echo Dependency on "${i}" is forbidden
               exit 1
             fi

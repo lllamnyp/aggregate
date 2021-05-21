@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package fanout
+package aggregate
 
 import (
 	"github.com/coredns/coredns/plugin"
@@ -26,32 +26,32 @@ import (
 var (
 	RequestCount = promauto.NewCounterVec(prometheus.CounterOpts{
 		Namespace: plugin.Namespace,
-		Subsystem: "fanout",
+		Subsystem: "aggregate",
 		Name:      "request_count_total",
 		Help:      "Counter of requests made per upstream.",
 	}, []string{"to"})
 	RcodeCount = promauto.NewCounterVec(prometheus.CounterOpts{
 		Namespace: plugin.Namespace,
-		Subsystem: "fanout",
+		Subsystem: "aggregate",
 		Name:      "response_rcode_count_total",
 		Help:      "Counter of requests made per upstream.",
 	}, []string{"rcode", "to"})
 	RequestDuration = promauto.NewHistogramVec(prometheus.HistogramOpts{
 		Namespace: plugin.Namespace,
-		Subsystem: "fanout",
+		Subsystem: "aggregate",
 		Name:      "request_duration_seconds",
 		Buckets:   plugin.TimeBuckets,
 		Help:      "Histogram of the time each request took.",
 	}, []string{"to"})
 	HealthcheckFailureCount = promauto.NewCounterVec(prometheus.CounterOpts{
 		Namespace: plugin.Namespace,
-		Subsystem: "fanout",
+		Subsystem: "aggregate",
 		Name:      "healthcheck_failure_count_total",
 		Help:      "Counter of the number of failed healthchecks.",
 	}, []string{"to"})
 	HealthcheckBrokenCount = promauto.NewCounter(prometheus.CounterOpts{
 		Namespace: plugin.Namespace,
-		Subsystem: "fanout",
+		Subsystem: "aggregate",
 		Name:      "healthcheck_broken_count_total",
 		Help:      "Counter of the number of complete failures of the healthchecks.",
 	})

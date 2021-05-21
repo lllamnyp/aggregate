@@ -1,4 +1,4 @@
-module github.com/networkservicemesh/fanout
+module github.com/lllamnyp/aggregate
 
 go 1.14
 

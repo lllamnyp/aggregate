@@ -14,5 +14,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package fanout - parallel proxying DNS messages to upstream resolvers.
-package fanout
+// Package aggregate - parallel proxying DNS messages to upstream resolvers.
+package aggregate

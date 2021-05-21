@@ -1,12 +1,12 @@
-# fanout
-![ci](https://github.com/networkservicemesh/fanout/workflows/ci/badge.svg) ![push](https://github.com/networkservicemesh/fanout/workflows/push/badge.svg?branch=master)
+# aggregate
+![ci](https://github.com/lllamnyp/aggregate/workflows/ci/badge.svg) ![push](https://github.com/lllamnyp/aggregate/workflows/push/badge.svg?branch=master)
 ## Name
 
-*fanout* - parallel proxying DNS messages to upstream resolvers.
+*aggregate* - parallel proxying DNS messages to upstream resolvers.
 
 ## Description
 
-Each incoming DNS query that hits the CoreDNS fanout plugin will be replicated in parallel to each listed IP (i.e. the DNS servers). The first non-negative response from any of the queried DNS Servers will be forwarded as a response to the application's DNS request.
+Each incoming DNS query that hits the CoreDNS aggregate plugin will be replicated in parallel to each listed IP (i.e. the DNS servers). The first non-negative response from any of the queried DNS Servers will be forwarded as a response to the application's DNS request.
 
 ## Syntax
 
@@ -33,11 +33,11 @@ Each incoming DNS query that hits the CoreDNS fanout plugin will be replicated i
 
 If monitoring is enabled (via the *prometheus* plugin) then the following metric are exported:
 
-* `coredns_fanout_request_duration_seconds{to}` - duration per upstream interaction.
-* `coredns_fanout_request_count_total{to}` - query count per upstream.
-* `coredns_fanout_response_rcode_count_total{to, rcode}` - count of RCODEs per upstream.
-* `coredns_fanout_healthcheck_failure_count_total{to}` - number of failed health checks per upstream.
-* `coredns_fanout_healthcheck_broken_count_total{}` - counter of when all upstreams are unhealthy,
+* `coredns_aggregate_request_duration_seconds{to}` - duration per upstream interaction.
+* `coredns_aggregate_request_count_total{to}` - query count per upstream.
+* `coredns_aggregate_response_rcode_count_total{to, rcode}` - count of RCODEs per upstream.
+* `coredns_aggregate_healthcheck_failure_count_total{to}` - number of failed health checks per upstream.
+* `coredns_aggregate_healthcheck_broken_count_total{}` - counter of when all upstreams are unhealthy,
   and we are randomly (this always uses the `random` policy) spraying to an upstream.
 
 Where `to` is one of the upstream servers (**TO** from the config), `rcode` is the returned RCODE
@@ -48,7 +48,7 @@ Proxy all requests within `example.org.` to a nameservers running on a different
 
 ~~~ corefile
 example.org {
-    fanout . 127.0.0.1:9005 127.0.0.1:9006 127.0.0.1:9007 127.0.0.1:9008
+    aggregate . 127.0.0.1:9005 127.0.0.1:9006 127.0.0.1:9007 127.0.0.1:9008
 }
 ~~~
 
@@ -56,7 +56,7 @@ Sends parallel requests between three resolvers, one of which has a IPv6 address
 
 ~~~ corefile
 . {
-    fanout . 10.0.0.10:53 10.0.0.11:1053 [2003::1]:53 {
+    aggregate . 10.0.0.10:53 10.0.0.11:1053 [2003::1]:53 {
         network TCP
     }
 }
@@ -66,7 +66,7 @@ Proxying everything except requests to `example.org`
 
 ~~~ corefile
 . {
-    fanout . 10.0.0.10:1234 {
+    aggregate . 10.0.0.10:1234 {
         except example.org
     }
 }
@@ -76,7 +76,7 @@ Proxy everything except `example.org` using the host's `resolv.conf`'s nameserve
 
 ~~~ corefile
 . {
-    fanout . /etc/resolv.conf {
+    aggregate . /etc/resolv.conf {
         except example.org
     }
 }
@@ -88,7 +88,7 @@ used in the TLS negotiation.
 
 ~~~ corefile
 . {
-    fanout . tls://9.9.9.9 {
+    aggregate . tls://9.9.9.9 {
        tls-server dns.quad9.net
     }
 }
@@ -97,7 +97,7 @@ used in the TLS negotiation.
 Sends parallel requests between five resolvers via UDP uses two workers and without attempting to reconnect. The first positive response from a proxy will be provided as the result.
 ~~~ corefile
 . {
-    fanout . 10.0.0.10:53 10.0.0.11:53 10.0.0.12:53 10.0.0.13:1053 10.0.0.14:1053 {
+    aggregate . 10.0.0.10:53 10.0.0.11:53 10.0.0.12:53 10.0.0.13:1053 10.0.0.14:1053 {
         worker-count 2
     }
 }

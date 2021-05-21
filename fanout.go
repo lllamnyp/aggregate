@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package fanout
+package aggregate
 
 import (
 	"context"
@@ -30,7 +30,7 @@ import (
 	"github.com/miekg/dns"
 )
 
-var log = clog.NewWithPlugin("fanout")
+var log = clog.NewWithPlugin("aggregate")
 
 // Fanout represents a plugin instance that can do async requests to list of DNS servers.
 type Fanout struct {
@@ -65,7 +65,7 @@ func (f *Fanout) addClient(p Client) {
 
 // Name implements plugin.Handler.
 func (f *Fanout) Name() string {
-	return "fanout"
+	return "aggregate"
 }
 
 // ServeDNS implements plugin.Handler.

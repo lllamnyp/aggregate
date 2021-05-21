@@ -19,8 +19,6 @@ linters-settings:
           - (github.com/sirupsen/logrus.FieldLogger).Fatalf
   golint:
     min-confidence: 0.8
-  goimports:
-    local-prefixes: github.com/networkservicemesh/sdk
   gocyclo:
     min-complexity: 15
   maligned:
@@ -165,7 +163,7 @@ issues:
       linters:
         - gochecknoinits
     # Binds to all network interfaces is used in test to get port.
-    - path: "fanout_test.go"
+    - path: "aggregate_test.go"
       linters:
         - gosec
     # Tests may be long.

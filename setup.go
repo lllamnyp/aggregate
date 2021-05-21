@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package fanout
+package aggregate
 
 import (
 	"io/ioutil"
@@ -35,7 +35,7 @@ import (
 )
 
 func init() {
-	caddy.RegisterPlugin("fanout", caddy.Plugin{
+	caddy.RegisterPlugin("aggregate", caddy.Plugin{
 		ServerType: "dns",
 		Action:     setup,
 	})
@@ -44,11 +44,11 @@ func init() {
 func setup(c *caddy.Controller) error {
 	f, err := parseFanout(c)
 	if err != nil {
-		return plugin.Error("fanout", err)
+		return plugin.Error("aggregate", err)
 	}
 	l := len(f.clients)
 	if len(f.clients) > maxIPCount {
-		return plugin.Error("fanout", errors.Errorf("more than %d TOs configured: %d", maxIPCount, l))
+		return plugin.Error("aggregate", errors.Errorf("more than %d TOs configured: %d", maxIPCount, l))
 	}
 
 	dnsserver.GetConfig(c).AddPlugin(func(next plugin.Handler) plugin.Handler {
@@ -90,7 +90,7 @@ func parseFanout(c *caddy.Controller) (*Fanout, error) {
 			return nil, plugin.ErrOnce
 		}
 		i++
-		f, err = parsefanoutStanza(&c.Dispenser)
+		f, err = parseaggregateStanza(&c.Dispenser)
 		if err != nil {
 			return nil, err
 		}
@@ -99,7 +99,7 @@ func parseFanout(c *caddy.Controller) (*Fanout, error) {
 	return f, nil
 }
 
-func parsefanoutStanza(c *caddyfile.Dispenser) (*Fanout, error) {
+func parseaggregateStanza(c *caddyfile.Dispenser) (*Fanout, error) {
 	f := New()
 	if !c.Args(&f.from) {
 		return f, c.ArgErr()

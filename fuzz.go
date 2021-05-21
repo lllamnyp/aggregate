@@ -16,7 +16,7 @@
 
 // +build gofuzz
 
-package fanout
+package aggregate
 
 import (
 	"github.com/coredns/coredns/plugin/pkg/dnstest"

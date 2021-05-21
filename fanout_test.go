@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package fanout
+package aggregate
 
 import (
 	"context"
@@ -106,7 +106,7 @@ func makeRecordA(rr string) *dns.A {
 	return r.(*dns.A)
 }
 
-type fanoutTestSuite struct {
+type aggregateTestSuite struct {
 	suite.Suite
 	network string
 }
@@ -120,7 +120,7 @@ func TestFanout_ExceptFile(t *testing.T) {
 	}()
 	_, err = file.WriteString(strings.Join(exclude, "\n"))
 	require.Nil(t, err)
-	source := fmt.Sprintf(`fanout . 0.0.0.0:53 {
+	source := fmt.Sprintf(`aggregate . 0.0.0.0:53 {
 	except-file %v
 }`, file.Name())
 	c := caddy.NewTestController("dns", source)
@@ -131,7 +131,7 @@ func TestFanout_ExceptFile(t *testing.T) {
 	}
 }
 
-func (t *fanoutTestSuite) TestConfigFromCorefile() {
+func (t *aggregateTestSuite) TestConfigFromCorefile() {
 	defer goleak.VerifyNone(t.T())
 	s := newServer(t.network, func(w dns.ResponseWriter, r *dns.Msg) {
 		ret := new(dns.Msg)
@@ -140,7 +140,7 @@ func (t *fanoutTestSuite) TestConfigFromCorefile() {
 		logErrIfNotNil(w.WriteMsg(ret))
 	})
 	defer s.close()
-	source := `fanout . %v {
+	source := `aggregate . %v {
 	NETWORK %v
 }`
 	c := caddy.NewTestController("dns", fmt.Sprintf(source, s.addr, t.network))
@@ -161,7 +161,7 @@ func (t *fanoutTestSuite) TestConfigFromCorefile() {
 	t.Equal(rec.Msg.Answer[0].Header().Name, "example.org.")
 }
 
-func (t *fanoutTestSuite) TestWorkerCountLessThenServers() {
+func (t *aggregateTestSuite) TestWorkerCountLessThenServers() {
 	defer goleak.VerifyNone(t.T())
 	const expected = 1
 	answerCount := 0
@@ -208,7 +208,7 @@ func (t *fanoutTestSuite) TestWorkerCountLessThenServers() {
 	defer mutex.Unlock()
 	t.Equal(answerCount, expected)
 }
-func (t *fanoutTestSuite) TestTwoServersUnsuccessfulResponse() {
+func (t *aggregateTestSuite) TestTwoServersUnsuccessfulResponse() {
 	defer goleak.VerifyNone(t.T())
 	rcode := 1
 	rcodeMutex := sync.Mutex{}
@@ -253,7 +253,7 @@ func (t *fanoutTestSuite) TestTwoServersUnsuccessfulResponse() {
 	}
 }
 
-func (t *fanoutTestSuite) TestCanReturnUnsuccessfulRepose() {
+func (t *aggregateTestSuite) TestCanReturnUnsuccessfulRepose() {
 	defer goleak.VerifyNone(t.T())
 	s := newServer(t.network, func(w dns.ResponseWriter, r *dns.Msg) {
 		msg := nxdomainMsg()
@@ -272,10 +272,10 @@ func (t *fanoutTestSuite) TestCanReturnUnsuccessfulRepose() {
 	_, err := f.ServeDNS(context.Background(), writer, req)
 	t.Nil(err)
 	t.Len(writer.answers, 1)
-	t.Equal(writer.answers[0].MsgHdr.Rcode, dns.RcodeNameError, "fanout plugin returns first negative answer if other answers on request are negative")
+	t.Equal(writer.answers[0].MsgHdr.Rcode, dns.RcodeNameError, "aggregate plugin returns first negative answer if other answers on request are negative")
 }
 
-func (t *fanoutTestSuite) TestBusyServer() {
+func (t *aggregateTestSuite) TestBusyServer() {
 	defer goleak.VerifyNone(t.T())
 	var requestNum, answerCount int32
 	totalRequestNum := int32(5)
@@ -308,7 +308,7 @@ func (t *fanoutTestSuite) TestBusyServer() {
 	t.Equal(totalRequestNum, atomic.LoadInt32(&answerCount))
 }
 
-func (t *fanoutTestSuite) TestTwoServers() {
+func (t *aggregateTestSuite) TestTwoServers() {
 	defer goleak.VerifyNone(t.T())
 	const expected = 1
 	var mutex sync.Mutex
@@ -365,10 +365,10 @@ func (t *fanoutTestSuite) TestTwoServers() {
 }
 
 func TestFanoutUDPSuite(t *testing.T) {
-	suite.Run(t, &fanoutTestSuite{network: udp})
+	suite.Run(t, &aggregateTestSuite{network: udp})
 }
 func TestFanoutTCPSuite(t *testing.T) {
-	suite.Run(t, &fanoutTestSuite{network: tcp})
+	suite.Run(t, &aggregateTestSuite{network: tcp})
 }
 
 func nxdomainMsg() *dns.Msg {

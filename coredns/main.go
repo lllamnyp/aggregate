@@ -24,11 +24,11 @@ import (
 	_ "github.com/coredns/coredns/plugin/log"
 	_ "github.com/coredns/coredns/plugin/reload"
 
-	_ "github.com/networkservicemesh/fanout"
+	_ "github.com/lllamnyp/aggregate"
 )
 
 func init() {
-	dnsserver.Directives = append(dnsserver.Directives, "fanout")
+	dnsserver.Directives = append(dnsserver.Directives, "aggregate")
 }
 
 func main() {
