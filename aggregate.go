@@ -32,7 +32,7 @@ import (
 
 var log = clog.NewWithPlugin("aggregate")
 
-// Aggregate represents a plugin instance that can do async requests to list of DNS servers.
+// Aggregate represents a plugin instance that can aggregate responses from a list of DNS servers.
 type Aggregate struct {
 	clients        []Client
 	tlsConfig      *tls.Config
@@ -122,14 +122,17 @@ func (f *Aggregate) ServeDNS(ctx context.Context, w dns.ResponseWriter, m *dns.M
 func (f *Aggregate) getAggregateResult(ctx context.Context, responseCh <-chan *response) *response {
 	count := len(f.clients)
 	var result *response
+	var answers = make([]dns.RR, 4)
 	for {
 		select {
 		case <-ctx.Done():
 			return result
 		case r := <-responseCh:
 			count--
+			answers = append(answers, r.response.Answer...)
 			if isBetter(result, r) {
 				result = r
+				result.response.Answer = answers
 			}
 			if count == 0 {
 				return result
@@ -140,8 +143,8 @@ func (f *Aggregate) getAggregateResult(ctx context.Context, responseCh <-chan *r
 			if r.response.Rcode != dns.RcodeSuccess {
 				break
 			}
-			return r
 		}
+		return result
 	}
 }
 
