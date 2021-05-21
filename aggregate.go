@@ -129,7 +129,12 @@ func (f *Aggregate) getAggregateResult(ctx context.Context, responseCh <-chan *r
 			return result
 		case r := <-responseCh:
 			count--
-			answers = append(answers, r.response.Answer...)
+			for i := range r.response.Answer {
+				if r.response.Answer[i] == nil {
+					break
+				}
+				answers = append(answers, r.response.Answer[i])
+			}
 			if isBetter(result, r) {
 				result = r
 				result.response.Answer = answers
