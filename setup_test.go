@@ -55,7 +55,7 @@ func TestSetup(t *testing.T) {
 
 	for i, test := range tests {
 		c := caddy.NewTestController("dns", test.input)
-		f, err := parseFanout(c)
+		f, err := parseAggregate(c)
 		if test.expectedErr != "" && err == nil {
 			t.Fatalf("Test %d: expected error but not found errors", i)
 		}
@@ -122,7 +122,7 @@ nameserver 10.10.255.253`), 0600); err != nil {
 
 	for i, test := range tests {
 		c := caddy.NewTestController("dns", test.input)
-		f, err := parseFanout(c)
+		f, err := parseAggregate(c)
 
 		if test.shouldErr && err == nil {
 			t.Errorf("Test %d: expected error but found %s for input %s", i, err, test.input)

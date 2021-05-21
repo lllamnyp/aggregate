@@ -35,7 +35,7 @@ func logErrIfNotNil(err error) {
 	log.Error(err)
 }
 
-func toDnstap(f *Fanout, host string, state *request.Request, reply *dns.Msg, start time.Time) {
+func toDnstap(f *Aggregate, host string, state *request.Request, reply *dns.Msg, start time.Time) {
 	// Query
 	q := new(tap.Message)
 	msg.SetQueryTime(q, start)

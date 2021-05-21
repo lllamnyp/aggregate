@@ -42,7 +42,7 @@ func init() {
 }
 
 func setup(c *caddy.Controller) error {
-	f, err := parseFanout(c)
+	f, err := parseAggregate(c)
 	if err != nil {
 		return plugin.Error("aggregate", err)
 	}
@@ -70,18 +70,18 @@ func setup(c *caddy.Controller) error {
 }
 
 // OnStartup starts a goroutines for all clients.
-func (f *Fanout) OnStartup() (err error) {
+func (f *Aggregate) OnStartup() (err error) {
 	return nil
 }
 
 // OnShutdown stops all configured clients.
-func (f *Fanout) OnShutdown() error {
+func (f *Aggregate) OnShutdown() error {
 	return nil
 }
 
-func parseFanout(c *caddy.Controller) (*Fanout, error) {
+func parseAggregate(c *caddy.Controller) (*Aggregate, error) {
 	var (
-		f   *Fanout
+		f   *Aggregate
 		err error
 		i   int
 	)
@@ -99,7 +99,7 @@ func parseFanout(c *caddy.Controller) (*Fanout, error) {
 	return f, nil
 }
 
-func parseaggregateStanza(c *caddyfile.Dispenser) (*Fanout, error) {
+func parseaggregateStanza(c *caddyfile.Dispenser) (*Aggregate, error) {
 	f := New()
 	if !c.Args(&f.from) {
 		return f, c.ArgErr()
@@ -149,7 +149,7 @@ func parseaggregateStanza(c *caddyfile.Dispenser) (*Fanout, error) {
 	return f, nil
 }
 
-func parseValue(v string, f *Fanout, c *caddyfile.Dispenser) error {
+func parseValue(v string, f *Aggregate, c *caddyfile.Dispenser) error {
 	switch v {
 	case "tls":
 		return parseTLS(f, c)
@@ -174,7 +174,7 @@ func parseValue(v string, f *Fanout, c *caddyfile.Dispenser) error {
 	}
 }
 
-func parseTimeout(f *Fanout, c *caddyfile.Dispenser) error {
+func parseTimeout(f *Aggregate, c *caddyfile.Dispenser) error {
 	if !c.NextArg() {
 		return c.ArgErr()
 	}
@@ -184,7 +184,7 @@ func parseTimeout(f *Fanout, c *caddyfile.Dispenser) error {
 	return err
 }
 
-func parseIgnoredFromFile(f *Fanout, c *caddyfile.Dispenser) error {
+func parseIgnoredFromFile(f *Aggregate, c *caddyfile.Dispenser) error {
 	args := c.RemainingArgs()
 	if len(args) != 1 {
 		return c.ArgErr()
@@ -200,7 +200,7 @@ func parseIgnoredFromFile(f *Fanout, c *caddyfile.Dispenser) error {
 	return nil
 }
 
-func parseIgnored(f *Fanout, c *caddyfile.Dispenser) error {
+func parseIgnored(f *Aggregate, c *caddyfile.Dispenser) error {
 	ignore := c.RemainingArgs()
 	if len(ignore) == 0 {
 		return c.ArgErr()
@@ -211,7 +211,7 @@ func parseIgnored(f *Fanout, c *caddyfile.Dispenser) error {
 	return nil
 }
 
-func parseWorkerCount(f *Fanout, c *caddyfile.Dispenser) error {
+func parseWorkerCount(f *Aggregate, c *caddyfile.Dispenser) error {
 	var err error
 	f.workerCount, err = parsePositiveInt(c)
 	if err == nil {
@@ -240,7 +240,7 @@ func parsePositiveInt(c *caddyfile.Dispenser) (int, error) {
 	return num, nil
 }
 
-func parseTLSServer(f *Fanout, c *caddyfile.Dispenser) error {
+func parseTLSServer(f *Aggregate, c *caddyfile.Dispenser) error {
 	if !c.NextArg() {
 		return c.ArgErr()
 	}
@@ -248,7 +248,7 @@ func parseTLSServer(f *Fanout, c *caddyfile.Dispenser) error {
 	return nil
 }
 
-func parseProtocol(f *Fanout, c *caddyfile.Dispenser) error {
+func parseProtocol(f *Aggregate, c *caddyfile.Dispenser) error {
 	if !c.NextArg() {
 		return c.ArgErr()
 	}
@@ -260,7 +260,7 @@ func parseProtocol(f *Fanout, c *caddyfile.Dispenser) error {
 	return nil
 }
 
-func parseTLS(f *Fanout, c *caddyfile.Dispenser) error {
+func parseTLS(f *Aggregate, c *caddyfile.Dispenser) error {
 	args := c.RemainingArgs()
 	if len(args) > 3 {
 		return c.ArgErr()

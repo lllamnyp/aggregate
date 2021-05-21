@@ -32,8 +32,8 @@ import (
 
 var log = clog.NewWithPlugin("aggregate")
 
-// Fanout represents a plugin instance that can do async requests to list of DNS servers.
-type Fanout struct {
+// Aggregate represents a plugin instance that can do async requests to list of DNS servers.
+type Aggregate struct {
 	clients        []Client
 	tlsConfig      *tls.Config
 	excludeDomains Domain
@@ -47,9 +47,9 @@ type Fanout struct {
 	Next           plugin.Handler
 }
 
-// New returns reference to new Fanout plugin instance with default configs.
-func New() *Fanout {
-	return &Fanout{
+// New returns reference to new Aggregate plugin instance with default configs.
+func New() *Aggregate {
+	return &Aggregate{
 		tlsConfig:      new(tls.Config),
 		net:            "udp",
 		attempts:       3,
@@ -58,18 +58,18 @@ func New() *Fanout {
 	}
 }
 
-func (f *Fanout) addClient(p Client) {
+func (f *Aggregate) addClient(p Client) {
 	f.clients = append(f.clients, p)
 	f.workerCount++
 }
 
 // Name implements plugin.Handler.
-func (f *Fanout) Name() string {
+func (f *Aggregate) Name() string {
 	return "aggregate"
 }
 
 // ServeDNS implements plugin.Handler.
-func (f *Fanout) ServeDNS(ctx context.Context, w dns.ResponseWriter, m *dns.Msg) (int, error) {
+func (f *Aggregate) ServeDNS(ctx context.Context, w dns.ResponseWriter, m *dns.Msg) (int, error) {
 	req := request.Request{W: w, Req: m}
 	if !f.match(&req) {
 		return plugin.NextOrFailure(f.Name(), f.Next, ctx, w, m)
@@ -98,7 +98,7 @@ func (f *Fanout) ServeDNS(ctx context.Context, w dns.ResponseWriter, m *dns.Msg)
 			}
 		}()
 	}
-	result := f.getFanoutResult(timeoutContext, responseCh)
+	result := f.getAggregateResult(timeoutContext, responseCh)
 	if result == nil {
 		return dns.RcodeServerFailure, timeoutContext.Err()
 	}
@@ -119,7 +119,7 @@ func (f *Fanout) ServeDNS(ctx context.Context, w dns.ResponseWriter, m *dns.Msg)
 	return 0, nil
 }
 
-func (f *Fanout) getFanoutResult(ctx context.Context, responseCh <-chan *response) *response {
+func (f *Aggregate) getAggregateResult(ctx context.Context, responseCh <-chan *response) *response {
 	count := len(f.clients)
 	var result *response
 	for {
@@ -145,14 +145,14 @@ func (f *Fanout) getFanoutResult(ctx context.Context, responseCh <-chan *respons
 	}
 }
 
-func (f *Fanout) match(state *request.Request) bool {
+func (f *Aggregate) match(state *request.Request) bool {
 	if !plugin.Name(f.from).Matches(state.Name()) || f.excludeDomains.Contains(state.Name()) {
 		return false
 	}
 	return true
 }
 
-func (f *Fanout) processClient(ctx context.Context, c Client, r *request.Request) *response {
+func (f *Aggregate) processClient(ctx context.Context, c Client, r *request.Request) *response {
 	start := time.Now()
 	for j := 0; j < f.attempts || f.attempts == 0; <-time.After(attemptDelay) {
 		if ctx.Err() != nil {

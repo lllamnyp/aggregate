@@ -111,7 +111,7 @@ type aggregateTestSuite struct {
 	network string
 }
 
-func TestFanout_ExceptFile(t *testing.T) {
+func TestAggregate_ExceptFile(t *testing.T) {
 	file, err := ioutil.TempFile(os.TempDir(), t.Name())
 	exclude := []string{"example1.com.", "example2.com."}
 	require.Nil(t, err)
@@ -124,7 +124,7 @@ func TestFanout_ExceptFile(t *testing.T) {
 	except-file %v
 }`, file.Name())
 	c := caddy.NewTestController("dns", source)
-	f, err := parseFanout(c)
+	f, err := parseAggregate(c)
 	require.Nil(t, err)
 	for _, e := range exclude {
 		require.True(t, f.excludeDomains.Contains(e))
@@ -144,7 +144,7 @@ func (t *aggregateTestSuite) TestConfigFromCorefile() {
 	NETWORK %v
 }`
 	c := caddy.NewTestController("dns", fmt.Sprintf(source, s.addr, t.network))
-	f, err := parseFanout(c)
+	f, err := parseAggregate(c)
 	t.Nil(err)
 	err = f.OnStartup()
 	t.Nil(err)
@@ -364,10 +364,10 @@ func (t *aggregateTestSuite) TestTwoServers() {
 	t.Equal(answerCount2, expected)
 }
 
-func TestFanoutUDPSuite(t *testing.T) {
+func TestAggregateUDPSuite(t *testing.T) {
 	suite.Run(t, &aggregateTestSuite{network: udp})
 }
-func TestFanoutTCPSuite(t *testing.T) {
+func TestAggregateTCPSuite(t *testing.T) {
 	suite.Run(t, &aggregateTestSuite{network: tcp})
 }
 

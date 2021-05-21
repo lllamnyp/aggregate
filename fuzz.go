@@ -25,7 +25,7 @@ import (
 	"github.com/miekg/dns"
 )
 
-var f *Fanout
+var f *Aggregate
 
 // abuse init to setup an environment to test against. This start another server to that will
 // reflect responses.
