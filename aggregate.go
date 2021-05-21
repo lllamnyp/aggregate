@@ -133,6 +133,7 @@ func (f *Aggregate) getAggregateResult(ctx context.Context, responseCh <-chan *r
 			if isBetter(result, r) {
 				result = r
 				result.response.Answer = answers
+				break
 			}
 			if count == 0 {
 				return result
@@ -143,8 +144,8 @@ func (f *Aggregate) getAggregateResult(ctx context.Context, responseCh <-chan *r
 			if r.response.Rcode != dns.RcodeSuccess {
 				break
 			}
+			break
 		}
-		return result
 	}
 }
 
