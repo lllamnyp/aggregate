@@ -20,7 +20,6 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/coredns/coredns/plugin"
@@ -75,12 +74,12 @@ func (f *Aggregate) ServeDNS(ctx context.Context, w dns.ResponseWriter, m *dns.M
 	if !f.match(&req) {
 		return plugin.NextOrFailure(f.Name(), f.Next, ctx, w, m)
 	}
-	timeoutContext, cancel := context.WithTimeout(ctx, defaultTimeout)
+	timeoutContext, cancel := context.WithTimeout(ctx, f.timeout)
 	defer cancel()
 	clientCount := len(f.clients)
-	workerChannel := make(chan Client, f.workerCount)
+	//workerChannel := make(chan Client, f.workerCount)
 	responseCh := make(chan *response, clientCount)
-	go func() {
+	/*go func() {
 		defer close(workerChannel)
 		for i := 0; i < clientCount; i++ {
 			client := f.clients[i]
@@ -91,13 +90,18 @@ func (f *Aggregate) ServeDNS(ctx context.Context, w dns.ResponseWriter, m *dns.M
 				continue
 			}
 		}
-	}()
-	for i := 0; i < f.workerCount; i++ {
+	}()*/
+	/*for i := 0; i < f.workerCount; i++ {
 		go func() {
 			for c := range workerChannel {
 				responseCh <- f.processClient(timeoutContext, c, &request.Request{W: w, Req: m})
 			}
 		}()
+	}*/
+	for i := range f.clients {
+		go func(idx int) {
+			responseCh <- f.processClient(timeoutContext, f.clients[idx], &request.Request{W: w, Req: m})
+		}(i)
 	}
 	result := f.getAggregateResult(timeoutContext, responseCh)
 	if result == nil {
@@ -127,10 +131,12 @@ func (f *Aggregate) getAggregateResult(ctx context.Context, responseCh <-chan *r
 	for {
 		select {
 		case <-ctx.Done():
-			fmt.Println("Context done")
 			return result
 		case r := <-responseCh:
 			count--
+			if r == nil || r.response == nil || r.response.Answer == nil {
+				break
+			}
 			answers = append(answers, r.response.Answer...)
 			if isBetter(result, r) {
 				r.response.Answer = answers
