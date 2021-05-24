@@ -20,6 +20,7 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/coredns/coredns/plugin"
@@ -122,25 +123,23 @@ func (f *Aggregate) ServeDNS(ctx context.Context, w dns.ResponseWriter, m *dns.M
 func (f *Aggregate) getAggregateResult(ctx context.Context, responseCh <-chan *response) *response {
 	count := len(f.clients)
 	var result *response
-	var answers = make([]dns.RR, 4)
+	var answers = make([]dns.RR, 0, 4)
 	for {
 		select {
 		case <-ctx.Done():
+			fmt.Println("Context done")
 			return result
 		case r := <-responseCh:
 			count--
-			for i := range r.response.Answer {
-				if r.response.Answer[i] == nil {
-					break
-				}
-				answers = append(answers, r.response.Answer[i])
-			}
+			answers = append(answers, r.response.Answer...)
 			if isBetter(result, r) {
+				r.response.Answer = answers
 				result = r
-				result.response.Answer = answers
-				break
 			}
 			if count == 0 {
+				if result != nil {
+					result.response.Answer = answers
+				}
 				return result
 			}
 			if r.err != nil {
