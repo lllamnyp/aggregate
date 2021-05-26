@@ -104,7 +104,7 @@ func parseaggregateStanza(c *caddyfile.Dispenser) (*Aggregate, error) {
 	if !c.Args(&f.from) {
 		return f, c.ArgErr()
 	}
-	f.from = plugin.Host(f.from).Normalize()
+	f.from = plugin.Name(f.from).Normalize()
 	to := c.RemainingArgs()
 	if len(to) == 0 {
 		return f, c.ArgErr()
@@ -195,7 +195,7 @@ func parseIgnoredFromFile(f *Aggregate, c *caddyfile.Dispenser) error {
 	}
 	names := strings.Split(string(b), "\n")
 	for i := 0; i < len(names); i++ {
-		f.excludeDomains.AddString(plugin.Host(names[i]).Normalize())
+		f.excludeDomains.AddString(plugin.Name(names[i]).Normalize())
 	}
 	return nil
 }
@@ -206,7 +206,7 @@ func parseIgnored(f *Aggregate, c *caddyfile.Dispenser) error {
 		return c.ArgErr()
 	}
 	for i := 0; i < len(ignore); i++ {
-		f.excludeDomains.AddString(plugin.Host(ignore[i]).Normalize())
+		f.excludeDomains.AddString(plugin.Name(ignore[i]).Normalize())
 	}
 	return nil
 }
